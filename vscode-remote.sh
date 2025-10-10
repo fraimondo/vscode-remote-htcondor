@@ -99,10 +99,12 @@ function ssh_connect () {
     JOB_NAME=$ROOT_NAME-cpu
     query_slurm
     CPU_NODE=$JOB_NODE
+    CPU_PORT=$JOB_PORT
 
     JOB_NAME=$ROOT_NAME-gpu
     query_slurm
     GPU_NODE=$JOB_NODE
+    GPU_PORT=$JOB_PORT
 
     if [ ! -z "${CPU_NODE}" ] && [ ! -z "${GPU_NODE}" ]; then
         echo "Multiple jobs found, please specify which node to connect to:"
@@ -121,17 +123,19 @@ function ssh_connect () {
 
     if [ ! -z "${CPU_NODE}" ]; then
         NODE=$CPU_NODE
+        PORT=$CPU_PORT
         TYPE=CPU
     elif [ ! -z "${GPU_NODE}" ]; then
         NODE=$GPU_NODE
+        PORT=$GPU_PORT
         TYPE=GPU
     else
         echo "No running job found"
         exit 1
     fi
 
-    echo "Connecting to $NODE ($TYPE) via SSH"
-    ssh $NODE
+    echo "Connecting to $NODE:$PORT ($TYPE) via SSH"
+    ssh -p $PORT $NODE
 }
 
 function connect () {
