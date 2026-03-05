@@ -24,7 +24,7 @@ function start ()
 
     # submit job
     port=$(shuf -i 10000-65000 -n 1)
-    cmd="VSCODE_REMOTE_HT_JOB_PORT=${port} condor_submit -batch-name VSCODE_REMOTE_HT-${port} ${@} ${VSCODE_REMOTE_HT_INSTALL_DIR}/vscode_remote.submit"
+    cmd="VSCODE_REMOTE_HT_JOB_PORT=${port} condor_submit -batch-name VSCODE_REMOTE_HT-${port} ${@} ${VSCODE_REMOTE_HT_INSTALL_DIR}/vscode-remote.submit"
     debug_print "Running command: $cmd"
     output=$(eval $cmd)
     if [ $? -ne 0 ]; then
