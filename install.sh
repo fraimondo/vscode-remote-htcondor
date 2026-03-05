@@ -96,3 +96,5 @@ else
     echo "You are on your own! Feel free to re-use me if you get stuck."
 fi
 echo ""
+echo "Self-destructing now! goodbye!"
+shred -u "$0"
