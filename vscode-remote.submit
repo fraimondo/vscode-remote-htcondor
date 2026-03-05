@@ -2,18 +2,6 @@
 universe       = vanilla
 getenv         = True
 
-if ! defined request_cpus
-    if defined VSCODE_REMOTE_HT_REQUEST_CPUS
-        request_cpus   = $(VSCODE_REMOTE_HT_REQUEST_CPUS)
-    endif
-endif
-
-if ! defined request_memory
-    if defined VSCODE_REMOTE_HT_REQUEST_MEMORY
-        request_memory = $(VSCODE_REMOTE_HT_REQUEST_MEMORY)
-    endif
-endif
-
 # Execution
 initial_dir    = $ENV(HOME)
 executable     = $ENV(HOME)/.vscode-remote-htcondor/vscode-remote-job.sh

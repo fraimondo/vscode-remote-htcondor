@@ -24,7 +24,14 @@ function start ()
 
     # submit job
     port=$(shuf -i 10000-65000 -n 1)
-    cmd="VSCODE_REMOTE_HT_JOB_PORT=${port} condor_submit -batch-name VSCODE_REMOTE_HT-${port} VSCODE_REMOTE_HT_REQUEST_CPUS=${VSCODE_REMOTE_HT_REQUEST_CPUS} VSCODE_REMOTE_HT_REQUEST_MEMORY=${VSCODE_REMOTE_HT_REQUEST_MEMORY} ${@} ${VSCODE_REMOTE_HT_INSTALL_DIR}/vscode-remote.submit"
+    params=""
+    if [ ! -z "$VSCODE_REMOTE_HT_REQUEST_CPUS" ]; then
+        params="$params request_cpus=${VSCODE_REMOTE_HT_REQUEST_CPUS}"
+    fi
+    if [ ! -z "$VSCODE_REMOTE_HT_REQUEST_MEMORY" ]; then
+        params="$params request_memory=${VSCODE_REMOTE_HT_REQUEST_MEMORY}"
+    fi
+    cmd="VSCODE_REMOTE_HT_JOB_PORT=${port} condor_submit -batch-name VSCODE_REMOTE_HT-${port} $params ${@} ${VSCODE_REMOTE_HT_INSTALL_DIR}/vscode-remote.submit"
     debug_print "Running command: $cmd"
     output=$(eval $cmd)
     if [ $? -ne 0 ]; then
