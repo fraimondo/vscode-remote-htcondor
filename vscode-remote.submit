@@ -2,12 +2,16 @@
 universe       = vanilla
 getenv         = True
 
-if defined $ENV(VSCODE_REMOTE_HT_REQUEST_CPUS)
-    request_cpus   = $ENV(VSCODE_REMOTE_HT_REQUEST_CPUS)
+if ! defined request_cpus
+    if defined VSCODE_REMOTE_HT_REQUEST_CPUS
+        request_cpus   = $(VSCODE_REMOTE_HT_REQUEST_CPUS)
+    endif
 endif
 
-if defined $ENV(VSCODE_REMOTE_HT_REQUEST_MEMORY)
-    request_memory = $ENV(VSCODE_REMOTE_HT_REQUEST_MEMORY)
+if ! defined request_memory
+    if defined VSCODE_REMOTE_HT_REQUEST_MEMORY
+        request_memory = $(VSCODE_REMOTE_HT_REQUEST_MEMORY)
+    endif
 endif
 
 # Execution
