@@ -6,6 +6,8 @@ function self_destruct() {
     shred -u "$1"
 }
 
+filename=$(realpath $0)
+
 echo "Installing vscode-remote in $INSTALL_DIR"
 
 if [ -d "$INSTALL_DIR" ]; then
@@ -16,7 +18,7 @@ if [ -d "$INSTALL_DIR" ]; then
         rm -r "${INSTALL_DIR}"
     else
         echo "Aborted"
-        self_destruct $0
+        self_destruct $filename
         exit 1
     fi
 
@@ -102,4 +104,4 @@ else
     echo "You are on your own! Feel free to re-use me if you get stuck."
 fi
 echo ""
-self_destruct $0
+self_destruct $filename
