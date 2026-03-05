@@ -3,7 +3,7 @@ INSTALL_URL=https://raw.githubusercontent.com/fraimondo/vscode-remote-htcondor/r
 
 function self_destruct() {
     echo "Self-destructing now! goodbye!"
-    shred -u "$0"
+    shred -u "$1"
 }
 
 echo "Installing vscode-remote in $INSTALL_DIR"
@@ -16,7 +16,7 @@ if [ -d "$INSTALL_DIR" ]; then
         rm -r "${INSTALL_DIR}"
     else
         echo "Aborted"
-        self_destruct
+        self_destruct $0
         exit 1
     fi
 
@@ -102,4 +102,4 @@ else
     echo "You are on your own! Feel free to re-use me if you get stuck."
 fi
 echo ""
-self_destruct
+self_destruct $0
