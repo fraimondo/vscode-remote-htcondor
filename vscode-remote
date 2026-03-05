@@ -12,27 +12,28 @@ function usage ()
     echo "Usage :  $0 [command]
 
     General commands:
-    start     Start a vscode-remote job
-    stop      Stop a running vscode-remote job
-    list      List running vscode-remote jobs
+    start         Start a vscode-remote job
+    stop          Stop a running vscode-remote job
+    list          List running vscode-remote jobs
+    clearlogs     Clear all vscode-remote log files
 
     Job commands (see usage below):
-    connect   Connect to a CPU node
+    connect       Connect to a CPU node
 
     You should _NOT_ manually call the script with the connect
     They should be used in the ProxyCommand in your ~/.ssh/config file, for example:
         Host juseless-vscode
             User USERNAME
             IdentityFile ~/.ssh/vscode-remote
-            ProxyCommand ssh juselss.inm7.de \"~/.vscode-remote-htcondor/vscode-remote.sh connect\"
+            ProxyCommand ssh juselss.inm7.de \"~/.vscode-remote-htcondor/vscode-remote connect\"
             StrictHostKeyChecking no  
     "
 }
 
 function list () {
     query_htcondor
-    if [ ! -z "${VSCODE_REMOTE_JOB_NODE}" ]; then
-        echo "A job is running with ID $VSCODE_REMOTE_JOB_ID on node $VSCODE_REMOTE_JOB_NODE (state: $VSCODE_REMOTE_JOB_STATE)"
+    if [ ! -z "${VSCODE_REMOTE_HT_JOB_NODE}" ]; then
+        echo "A job is running with ID $VSCODE_REMOTE_HT_JOB_ID on node $VSCODE_REMOTE_HT_JOB_NODE (state: $VSCODE_REMOTE_HT_JOB_STATE)"
     else
         echo "No running job found"
     fi
@@ -43,14 +44,15 @@ if [ ! -z "$1" ]; then
     START=$(date +%s)
     # trap "cleanup && exit 1" INT TERM
     case $1 in
-        list)   list ;;
-        start)  start ;;
-        stop)   stop ;;
-        connect)    connect ;;
+        list)   list "${@:2}";;
+        start)  start "${@:2}";;
+        stop)   stop "${@:2}";;
+        connect)    connect "${@:2}";;
+        clearlogs)   clearlogs "${@:2}";;
         help)   usage ;;
         *)  echo -e "Command '$1' does not exist" >&2
             usage; exit 1 ;;
-    esac  
+    esac
     exit 0
 else
     usage
