@@ -25,7 +25,7 @@ This script is designed to be used with the [Remote - SSH](https://marketplace.v
 Just login to your HTC head node and run the following command to run the installation script. Follow the instructions!
 
 ```shell
-curl ...
+curl -Os https://raw.githubusercontent.com/fraimondo/vscode-remote-htcondor/refs/heads/main/install.sh && $SHELL install.sh
 ```
 
 The scripts will be installed in `~/.vscode-remote-htcondor`
