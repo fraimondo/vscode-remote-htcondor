@@ -1,5 +1,5 @@
 INSTALL_DIR=$HOME/.vscode-remote-htcondor
-INSTALL_URL=https://raw.githubusercontent.com/fraimondo/vscode-remote-htcondor/refs/heads/main/
+INSTALL_URL=https://raw.githubusercontent.com/fraimondo/vscode-remote-htcondor/refs/heads/main
 
 echo "Installing vscode-remote in $INSTALL_DIR"
 

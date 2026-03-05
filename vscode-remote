@@ -22,11 +22,13 @@ function usage ()
 
     You should _NOT_ manually call the script with the connect
     They should be used in the ProxyCommand in your ~/.ssh/config file, for example:
-        Host juseless-vscode
+        Host HOSTNAME-vscode
             User USERNAME
-            IdentityFile ~/.ssh/vscode-remote
-            ProxyCommand ssh juselss.inm7.de \"~/.vscode-remote-htcondor/vscode-remote connect\"
+            ProxyCommand ssh HOSTNAME \"~/.vscode-remote-htcondor/vscode-remote connect\"
             StrictHostKeyChecking no  
+            UserKnownHostsFile /dev/null
+    
+    NOTE: Replace HOSTNAME and USERNAME with your remote login information.
     "
 }
 
