@@ -69,10 +69,8 @@ Or even parameters to the `condor_submit` script:
 
 The vscode-remote-htcondor script is designed to work out of the box with a basic HTCondor setup, but it can be customized to fit your specific cluster configuration and requirements.
 
-This is, in principle, done by setting environment variables. The files to edit depends on your shell:
+This is, in principle, done by setting environment variables. Since the scripts are run using bash, the environment variables can be set in any of the typical bash configuration files: `.bash_profile`, `.profile` or `.bashrc`
 
-- bash: `.bash_profile`, `.profile` or `.bashrc`
-- zsh: `.zshenv`
 
 ### Controlling the behaviour of the scripts
 
@@ -80,7 +78,7 @@ The script has some environment variables that can be set to control its behavio
 
 - `VSCODE-REMOTE_HT_IDLE_TIMEOUT`: time in seconds after which an idle job will be cancelled. Default is 600 seconds (10 minutes).
 - `VSCODE-REMOTE_HT_NC_TIMEOUT`: time in seconds after which the bridge between the head node and the compute node will be killed. More technical explaination: `nc` command will timeout if no traffic is present. Default is 120 seconds (2 minutes). This will not kill the job, but it will allow the script to exit and the monitor timer to start running, which will check for idle jobs and cancel them if necessary.
-- `VSCODE-REMOTE_HT_DEBUG`: If set, messages with debugging information will be printed.
+- `VSCODE-REMOTE_HT_DEBUG`: If set, messages with debugging information will be printed. If your login shell is non-bash, this needs to be set in other location than the `.profile`. For zsh, this is in `.zshenv`.
 
 ### Customizing the job submission
 
