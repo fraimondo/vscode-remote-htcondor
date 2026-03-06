@@ -13,11 +13,26 @@ function debug_print ()
     fi
 }
 
+function wait_for_job ()
+{
+    job_started=0
+    while [ $job_started -eq 0 ]; do
+        cmd="condor_q -long $1"
+        VSCODE_REMOTE_HT_JOB_STATE=$($cmd | grep "^JobStatus" | awk -F ' = ' '{print $2}')
+        if [ "$VSCODE_REMOTE_HT_JOB_STATE" == "2" ]; then
+            job_started=1
+            debug_print "Job stated"
+        else
+            sleep 1
+        fi
+    done
+}
+
 function start ()
 {
     # check if there is already a job running, if so, error
     query_htcondor
-    if [ ! -z "${VSCODE_REMOTE_HT_JOB_NODE}" ]; then
+    if [ ! -z "${VSCODE_REMOTE_HT_JOB_ID}" ]; then
         echo "A job is already running with ID $VSCODE_REMOTE_HT_JOB_ID on node $VSCODE_REMOTE_HT_JOB_NODE"
         exit 1
     fi
@@ -45,18 +60,7 @@ function start ()
     debug_print "Submitted job with ID $submit_id"
     
     # wait for job to start
-    debug_print "Waiting for job ${submit_id} to start..."
-    job_started=0
-    while [ $job_started -eq 0 ]; do
-        cmd="condor_q -long $submit_id"
-        VSCODE_REMOTE_HT_JOB_STATE=$($cmd | grep "^JobStatus" | awk -F ' = ' '{print $2}')
-        if [ "$VSCODE_REMOTE_HT_JOB_STATE" == "2" ]; then
-            job_started=1
-            debug_print "Job stated"
-        else
-            sleep 1
-        fi
-    done
+    wait_for_job $submit_id
 
     # Update job vars
     query_htcondor
@@ -99,10 +103,10 @@ function query_htcondor ()
         debug_print "Output: $output"
         debug_print "No job found"
         # no job found
-        VSCODE_REMOTE_HT_JOB_ID=""
-        VSCODE_REMOTE_HT_JOB_STATE=""
-        VSCODE_REMOTE_HT_JOB_NODE=""
-        VSCODE_REMOTE_HT_JOB_PORT=""
+        unset VSCODE_REMOTE_HT_JOB_ID
+        unset VSCODE_REMOTE_HT_JOB_STATE
+        unset VSCODE_REMOTE_HT_JOB_NODE
+        unset VSCODE_REMOTE_HT_JOB_PORT
     else
         debug_print "Output: $output"
         # parse output to get job id, state and node
@@ -120,10 +124,14 @@ function query_htcondor ()
 
 function connect () {
     query_htcondor
-    if [ -z "${VSCODE_REMOTE_HT_JOB_NODE}" ]; then
+    if [ -z "${VSCODE_REMOTE_HT_JOB_ID}" ]; then
         echo "No running job found, starting a job first"
         start
     fi
+
+    # It might happen that we have a job in the queue, but it is not running yet. 
+    # In that case, we should wait for it to start before trying to connect to it.
+    wait_for_job $submit_id
 
     echo "Connecting to $VSCODE_REMOTE_HT_JOB_NODE"
 

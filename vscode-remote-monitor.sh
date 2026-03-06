@@ -36,7 +36,14 @@ while true; do
             cmd="condor_rm $VSCODE_REMOTE_HT_JOB_ID"
             debug_print "Running command: $cmd"
             eval $cmd
-            exit 1
+            exit 0
+        fi
+        # do we actually have a job in the queue at this point? 
+        # If not, we should probably exit immediately instead of waiting for the idle timeout
+        query_htcondor
+        if [ -z "${VSCODE_REMOTE_HT_JOB_ID}" ]; then
+            debug_print "No job found in the queue, exiting"
+            exit 0
         fi
     else
         debug_print "Output: $output"
