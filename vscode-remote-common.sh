@@ -58,7 +58,7 @@ function start ()
     debug_print "Output: $output"
     submit_id=$(echo $output | awk -F ' cluster ' '{print $2}' | awk -F '.' '{print $1}')
     debug_print "Submitted job with ID $submit_id"
-    
+
     # wait for job to start
     wait_for_job $submit_id
 
@@ -131,7 +131,7 @@ function connect () {
 
     # It might happen that we have a job in the queue, but it is not running yet. 
     # In that case, we should wait for it to start before trying to connect to it.
-    wait_for_job $submit_id
+    wait_for_job $VSCODE_REMOTE_HT_JOB_ID
 
     echo "Connecting to $VSCODE_REMOTE_HT_JOB_NODE"
 
