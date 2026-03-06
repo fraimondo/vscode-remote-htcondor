@@ -71,7 +71,7 @@ function start ()
     else
         log_file="${VSCODE_REMOTE_HT_INSTALL_DIR}/logs/vscode-remote-monitor.log"
         debug_print "Debug mode is on, sending monitor log to $log_file"
-        cmd="${SCRIPT_DIR}/vscode-remote-monitor.sh > $log_file 2>&1 &"
+        cmd="nohup ${SCRIPT_DIR}/vscode-remote-monitor.sh > $log_file 2>&1 &"
     fi
     debug_print "Running command: $cmd"
     eval $cmd
