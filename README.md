@@ -76,7 +76,7 @@ Or even parameters to the `condor_submit` script:
 ~/.vscode-remote-htcondor/vscode-remote start request_cpus=4 request_memory=16G Requirements='Arch == "ppc64le"'
 ```
 
-## Configuration
+## Configuration (changing the default behaviour)
 
 The vscode-remote-htcondor script is designed to work out of the box with a basic HTCondor setup, but it can be customized to fit your specific cluster configuration and requirements.
 
