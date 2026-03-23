@@ -50,6 +50,9 @@ Sometimes you might need to run a special job on the cluster, for example to tes
 ~/.vscode-remote-htcondor/vscode-remote start
 ```
 
+This will queue a job on the cluster with the default configuration, so next time you connect from the VS Code remote explorer, it will connect to this job instead of queuing a new one. 
+
+
 > [!IMPORTANT]
 >
 > - The job will be killed if no connections are active for more than 10 minutes (can be configured, see below). Make sure to connect within 10 minutes.
