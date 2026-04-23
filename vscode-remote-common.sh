@@ -85,12 +85,18 @@ function stop()
         cmd="condor_rm $VSCODE_REMOTE_HT_JOB_ID"
         debug_print "Running command: $cmd"
         eval $cmd
-
-        echo "Stopping all monitors"
-        killall vscode-remote-monitor.sh
     else
         echo "No running job found"
     fi
+
+    echo "Stopping all monitors"
+    cmd="pkill -u $USER -f 'vscode-remote-monitor.sh'"
+    eval $cmd
+
+    echo "Stopping all nc processes"
+    cmd="pkill -u $USER -f 'vscode-remote connect'"
+    eval $cmd
+
 }
 
 function query_htcondor () 
