@@ -88,6 +88,7 @@ read yn
 if [ "$yn" = "y" ] || [ "$yn" = "Y" ]; then
     echo ""
     echo "Please tell me the hostname of the remote server (what you used to connect here!)"
+    echo "If your cluster has several login nodes behind one name, use this specific login node: $(hostname -f 2>/dev/null || hostname)"
     read hostname
 
     echo ""
@@ -100,9 +101,12 @@ if [ "$yn" = "y" ] || [ "$yn" = "Y" ]; then
     echo "Host ${shortname}-vscode"
     echo "    HostName ${hostname}"
     echo "    User ${USER}"
-    echo "    ProxyCommand ssh ${hostname} \"~/.vscode-remote-htcondor/vscode-remote connect\""
-    echo "    StrictHostKeyChecking no"
-    echo "    UserKnownHostsFile /dev/null"
+    echo "    ProxyCommand ssh ${USER}@${hostname} \"~/.vscode-remote-htcondor/vscode-remote connect\""
+    echo "    HostKeyAlias ${shortname}-vscode"
+    echo "    StrictHostKeyChecking accept-new"
+    echo ""
+    echo "The job always uses the same host key, so it is accepted on the first connection"
+    echo "and checked from then on, no matter which compute node the job runs on."
     echo ""
     echo "If you are using a custom port, or key, or any particular config, then you will need to adapt this entry accordingly"
     echo ""

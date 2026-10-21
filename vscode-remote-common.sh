@@ -46,11 +46,17 @@ function wait_for_job ()
 
 function start ()
 {
-    # check if there is already a job running, if so, error
+    # Lock so that concurrent connects don't submit more than one job.
+    # Released once the job is submitted (or when the script exits).
+    exec 9> "${VSCODE_REMOTE_HT_INSTALL_DIR}/.submit.lock"
+    flock 9
+
+    # check if there is already a job, if so, return with an error
     query_htcondor
     if [ ! -z "${VSCODE_REMOTE_HT_JOB_ID}" ]; then
-        echo "A job is already running with ID $VSCODE_REMOTE_HT_JOB_ID on node $VSCODE_REMOTE_HT_JOB_NODE"
-        exit 1
+        exec 9>&-
+        >&2 echo "A job already exists with ID $VSCODE_REMOTE_HT_JOB_ID (node: ${VSCODE_REMOTE_HT_JOB_NODE:-none, not running yet})"
+        return 1
     fi
 
     # submit job
@@ -82,6 +88,9 @@ function start ()
         exit 1
     fi
     debug_print "Submitted job with ID $submit_id"
+    # The job is in the queue now, release the lock before starting the
+    # monitor so it does not inherit it
+    exec 9>&-
 
     # Start the monitor right away, so the job is cancelled even if we get
     # interrupted while waiting for it to start
@@ -160,9 +169,12 @@ function query_htcondor ()
 }
 
 function connect () {
+    # stdout is the SSH stream (ProxyCommand), all messages must go to stderr
     query_htcondor
     if [ -z "${VSCODE_REMOTE_HT_JOB_ID}" ]; then
-        echo "No running job found, starting a job first"
+        >&2 echo "No job found, starting a job first"
+        # If another connect submitted a job in the meantime, start returns 1
+        # and leaves that job's info in the VSCODE_REMOTE_HT_JOB_* vars
         start
     fi
 
@@ -173,10 +185,11 @@ function connect () {
     # The node is only known once the job is running
     query_htcondor
 
-    echo "Connecting to $VSCODE_REMOTE_HT_JOB_NODE"
+    >&2 echo "Connecting to $VSCODE_REMOTE_HT_JOB_NODE"
 
     tries=0
-    while ! nc -z $VSCODE_REMOTE_HT_JOB_NODE $VSCODE_REMOTE_HT_JOB_PORT; do
+    # Probe the port with bash's /dev/tcp: `nc -z` is not supported by all netcat variants
+    while ! (: < /dev/tcp/$VSCODE_REMOTE_HT_JOB_NODE/$VSCODE_REMOTE_HT_JOB_PORT) 2>/dev/null; do
         tries=$((tries + 1))
         # If sshd fails to start (e.g. port in use), the job ends and we would wait forever.
         # condor_q is heavy on the scheduler, so only check every 10 tries.
@@ -192,7 +205,12 @@ function connect () {
 
     # Timeout NC Without traffic. This will not kill the job.
     # The monitor timeout will start running after this process ends.
-    nc -w $VSCODE_REMOTE_HT_NC_TIMEOUT $VSCODE_REMOTE_HT_JOB_NODE $VSCODE_REMOTE_HT_JOB_PORT
+    # Ncat (default on RHEL-like systems) uses -i for the idle timeout, -w is only the connect timeout
+    if nc --version 2>&1 | grep -q Ncat; then
+        nc -i $VSCODE_REMOTE_HT_NC_TIMEOUT $VSCODE_REMOTE_HT_JOB_NODE $VSCODE_REMOTE_HT_JOB_PORT
+    else
+        nc -w $VSCODE_REMOTE_HT_NC_TIMEOUT $VSCODE_REMOTE_HT_JOB_NODE $VSCODE_REMOTE_HT_JOB_PORT
+    fi
 }
 
 function clearlogs() {

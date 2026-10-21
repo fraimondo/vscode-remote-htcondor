@@ -19,6 +19,11 @@ This script is designed to be used with the [Remote - SSH](https://marketplace.v
 - Compute node names must resolve to their internal IP addresses
 - Compute nodes must be accessible via IP from the login node
 - You must have SSH access to the HTC login node
+- You must always connect through the same login node (see below)
+
+> [!WARNING]
+>
+> If your cluster has several login nodes behind one hostname (e.g. `login.cluster` sends you to `login1` or `login2`), use the name of one specific login node in your SSH configuration. The job is cancelled by a monitor process running on the login node where the job was started. That monitor can only see connections made through its own login node, so if you connect through a different one, it will cancel the job while you are still using it.
 
 ## Installation
 
@@ -82,7 +87,10 @@ Or even parameters to the `condor_submit` script:
 
 The vscode-remote-htcondor script is designed to work out of the box with a basic HTCondor setup, but it can be customized to fit your specific cluster configuration and requirements.
 
-This is, in principle, done by setting environment variables. Since the scripts are run using bash, the environment variables can be set in any of the typical bash configuration files: `.bash_profile`, `.profile` or `.bashrc`
+This is, in principle, done by setting environment variables (with `export`). When VS Code connects, the scripts are run through a non-interactive SSH command, which does not read `.bash_profile` or `.profile`:
+
+- If your login shell is bash, set them in `.bashrc`, **before** any line that stops early for non-interactive shells (such as `[ -z "$PS1" ] && return` or `case $- in *i*) ;; *) return;; esac`).
+- If your login shell is zsh, set them in `.zshenv`.
 
 
 ### Controlling the behaviour of the scripts
@@ -91,7 +99,7 @@ The script has some environment variables that can be set to control its behavio
 
 - `VSCODE_REMOTE_HT_IDLE_TIMEOUT`: time in seconds after which an idle job will be cancelled. Default is 600 seconds (10 minutes).
 - `VSCODE_REMOTE_HT_NC_TIMEOUT`: time in seconds after which the bridge between the head node and the compute node will be killed. More technical explaination: `nc` command will timeout if no traffic is present. Default is 120 seconds (2 minutes). This will not kill the job, but it will allow the script to exit and the monitor timer to start running, which will check for idle jobs and cancel them if necessary.
-- `VSCODE_REMOTE_HT_DEBUG`: If set, messages with debugging information will be printed. If your login shell is non-bash, this needs to be set in other location than the `.profile`. For zsh, this is in `.zshenv`.
+- `VSCODE_REMOTE_HT_DEBUG`: If set, messages with debugging information will be printed.
 
 ### Customizing the job submission
 
