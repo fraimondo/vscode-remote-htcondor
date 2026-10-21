@@ -25,7 +25,7 @@ This script is designed to be used with the [Remote - SSH](https://marketplace.v
 Just login to your HTC head node and run the following command to run the installation script. Follow the instructions!
 
 ```shell
-curl -Os https://raw.githubusercontent.com/fraimondo/vscode-remote-htcondor/refs/heads/main/install.sh && $SHELL install.sh
+curl -fsSLO https://raw.githubusercontent.com/fraimondo/vscode-remote-htcondor/refs/heads/main/install.sh && $SHELL install.sh
 ```
 
 The scripts will be installed in `~/.vscode-remote-htcondor`
@@ -69,7 +69,7 @@ You can also stop a running job by passing the `stop` command:
 You can additionally pass some parameters to customize the job submission, for example:
 
 ```shell
-VSCODE-REMOTE_HT_REQUEST_CPUS=4 VSCODE-REMOTE_HT_REQUEST_MEMORY=16G ~/.vscode-remote-htcondor/vscode-remote start
+VSCODE_REMOTE_HT_REQUEST_CPUS=4 VSCODE_REMOTE_HT_REQUEST_MEMORY=16G ~/.vscode-remote-htcondor/vscode-remote start
 ```
 
 Or even parameters to the `condor_submit` script:
@@ -89,9 +89,9 @@ This is, in principle, done by setting environment variables. Since the scripts 
 
 The script has some environment variables that can be set to control its behaviour:
 
-- `VSCODE-REMOTE_HT_IDLE_TIMEOUT`: time in seconds after which an idle job will be cancelled. Default is 600 seconds (10 minutes).
-- `VSCODE-REMOTE_HT_NC_TIMEOUT`: time in seconds after which the bridge between the head node and the compute node will be killed. More technical explaination: `nc` command will timeout if no traffic is present. Default is 120 seconds (2 minutes). This will not kill the job, but it will allow the script to exit and the monitor timer to start running, which will check for idle jobs and cancel them if necessary.
-- `VSCODE-REMOTE_HT_DEBUG`: If set, messages with debugging information will be printed. If your login shell is non-bash, this needs to be set in other location than the `.profile`. For zsh, this is in `.zshenv`.
+- `VSCODE_REMOTE_HT_IDLE_TIMEOUT`: time in seconds after which an idle job will be cancelled. Default is 600 seconds (10 minutes).
+- `VSCODE_REMOTE_HT_NC_TIMEOUT`: time in seconds after which the bridge between the head node and the compute node will be killed. More technical explaination: `nc` command will timeout if no traffic is present. Default is 120 seconds (2 minutes). This will not kill the job, but it will allow the script to exit and the monitor timer to start running, which will check for idle jobs and cancel them if necessary.
+- `VSCODE_REMOTE_HT_DEBUG`: If set, messages with debugging information will be printed. If your login shell is non-bash, this needs to be set in other location than the `.profile`. For zsh, this is in `.zshenv`.
 
 ### Customizing the job submission
 
@@ -116,11 +116,14 @@ There are two ways to configure the job submission. You can either 1) edit the `
 
 1. Editing the `vscode-remote.submit` file directly allows you to have full control over the job submission, and to use any HTCondor features you want, but keep in mind that any updates to the script may overwrite your changes, so it is recommended to keep a backup of your custom submit file.
 
-2. There are two environment variables you can set to customize the job submission:
+2. There are three environment variables you can set to customize the job submission:
 
-- `VSCODE-REMOTE_HT_REQUEST_CPUS`: if set, it will be used to request a specific number of CPUs for the job
-- `VSCODE-REMOTE_HT_REQUEST_MEMORY`: if set, it will be used to request
+- `VSCODE_REMOTE_HT_REQUEST_CPUS`: if set, it will be used to request a specific number of CPUs for the job
+- `VSCODE_REMOTE_HT_REQUEST_MEMORY`: if set, it will be used to request
   a specific amount of memory for the job (e.g. 8G for 8 GB)
+- `VSCODE_REMOTE_HT_PRIORITY`: if set, it will be used as the job priority (an integer, default 0).
+  Higher values run first, but this only reorders your own jobs: it will not make the job start
+  before jobs from other users.
 
 ## Troubleshooting
 

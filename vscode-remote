@@ -36,8 +36,10 @@ function list () {
     query_htcondor
     if [ ! -z "${VSCODE_REMOTE_HT_JOB_NODE}" ]; then
         echo "A job is running with ID $VSCODE_REMOTE_HT_JOB_ID on node $VSCODE_REMOTE_HT_JOB_NODE (state: $VSCODE_REMOTE_HT_JOB_STATE)"
+    elif [ ! -z "${VSCODE_REMOTE_HT_JOB_ID}" ]; then
+        echo "A job is queued with ID $VSCODE_REMOTE_HT_JOB_ID, not running yet (state: $VSCODE_REMOTE_HT_JOB_STATE)"
     else
-        echo "No running job found"
+        echo "No job found"
     fi
 }
 

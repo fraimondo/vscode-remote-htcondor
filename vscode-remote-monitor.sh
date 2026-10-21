@@ -3,51 +3,52 @@
 SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 source $SCRIPT_DIR/vscode-remote-common.sh
 
-# wait for job to start
-timeout=300
-while [ -z "${VSCODE_REMOTE_HT_JOB_NODE}" ] || [ "${VSCODE_REMOTE_HT_JOB_STATE}" != "2" ]; do
-    debug_print "Waiting for any job to be running..."
-    sleep 5
-    query_htcondor
-    timeout=$((timeout - 5))
-    if [ $timeout -le 0 ]; then
-        debug_print "Timeout waiting for job to start, exiting"
-        exit 1
-    fi
-done
+# Usage: vscode-remote-monitor.sh JOB_ID
+JOB_ID=$1
+if [ -z "$JOB_ID" ]; then
+    >&2 echo "Usage: $0 JOB_ID"
+    exit 1
+fi
 
 # Monitor process to find a vscode-remote process, if there is
-# no process after VSCODE_HTCONDOR_IDLE_TIMEOUT seconds, cancel the job and exit
+# no process for VSCODE_REMOTE_HT_IDLE_TIMEOUT seconds, cancel the job and exit.
+# Time spent idle in the queue does not count, and we exit once the job leaves the queue.
 IDLE_START=$(date +%s)
 while true; do
+    state=$(job_status $JOB_ID)
+    if [ $? -ne 0 ]; then
+        debug_print "condor_q failed, retrying later"
+        sleep 60
+        continue
+    fi
+    if [ -z "$state" ]; then
+        debug_print "Job $JOB_ID is no longer in the queue, exiting"
+        exit 0
+    fi
+
     debug_print "Checking for vscode-remote process..."
     cmd="ps -ux | grep 'vscode-remote connect' | grep -v grep"
     debug_print "Running command: $cmd"
     output=$(eval $cmd)
-    if [ $? -ne 0 ]; then
+    if [ $? -eq 0 ]; then
         debug_print "Output: $output"
+        IDLE_START=$(date +%s)
+    elif [ "$state" == "1" ]; then
+        debug_print "Job $JOB_ID is still idle in the queue"
+        IDLE_START=$(date +%s)
+    else
         debug_print "No vscode-remote process found"
         now=$(date +%s)
         elapsed=$((now - IDLE_START))
         debug_print "Elapsed time without vscode-remote process: $elapsed seconds"
         debug_print "Idle timeout: $VSCODE_REMOTE_HT_IDLE_TIMEOUT seconds"
         if [ "$elapsed" -gt "$VSCODE_REMOTE_HT_IDLE_TIMEOUT" ]; then
-            debug_print "No vscode-remote process found for more than $VSCODE_REMOTE_HT_IDLE_TIMEOUT seconds, canceling job and exiting" 
-            cmd="condor_rm $VSCODE_REMOTE_HT_JOB_ID"
+            debug_print "No vscode-remote process found for more than $VSCODE_REMOTE_HT_IDLE_TIMEOUT seconds, canceling job and exiting"
+            cmd="condor_rm $JOB_ID"
             debug_print "Running command: $cmd"
             eval $cmd
             exit 0
         fi
-        # do we actually have a job in the queue at this point? 
-        # If not, we should probably exit immediately instead of waiting for the idle timeout
-        query_htcondor
-        if [ -z "${VSCODE_REMOTE_HT_JOB_ID}" ]; then
-            debug_print "No job found in the queue, exiting"
-            exit 0
-        fi
-    else
-        debug_print "Output: $output"
-        IDLE_START=$(date +%s)
     fi
     sleep 60
 done

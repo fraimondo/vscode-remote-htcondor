@@ -14,6 +14,10 @@ if [ -d "$INSTALL_DIR" ]; then
     echo "Installation exists in ${INSTALL_DIR}, shall we overwrite? (y/N)"
     read yn
     if [ "$yn" = "y" ] || [ "$yn" = "Y" ]; then
+        if [ -f "${INSTALL_DIR}/vscode-remote.submit" ]; then
+            cp "${INSTALL_DIR}/vscode-remote.submit" "${INSTALL_DIR}.submit.bak"
+            echo "Saved a backup of your submit file to ${INSTALL_DIR}.submit.bak"
+        fi
         echo "Deleting all contents of ${INSTALL_DIR}"
         rm -r "${INSTALL_DIR}"
     else
@@ -30,11 +34,14 @@ echo "Created ${INSTALL_DIR}"
 
 cd $INSTALL_DIR
 echo "Downloading files"
-curl -O $INSTALL_URL/vscode-remote-common.sh
-curl -O $INSTALL_URL/vscode-remote-job.sh
-curl -O $INSTALL_URL/vscode-remote.submit
-curl -O $INSTALL_URL/vscode-remote-monitor.sh
-curl -O $INSTALL_URL/vscode-remote
+for f in vscode-remote-common.sh vscode-remote-job.sh vscode-remote.submit vscode-remote-monitor.sh vscode-remote; do
+    # -f: fail on HTTP errors instead of saving the error page as the script
+    if ! curl -fsSLO "$INSTALL_URL/$f"; then
+        echo "Failed to download $f, aborting"
+        self_destruct $filename
+        exit 1
+    fi
+done
 
 chmod +x *.sh
 chmod +x vscode-remote
@@ -62,7 +69,7 @@ elif [ "$SHELLNAME" = "zsh" ]; then
     read yn
     if [ "$yn" = "y" ] || [ "$yn" = "Y" ]; then
         echo "Adding $INSTALL_DIR to PATH in ~/.zshrc"
-        echo "" >> ~/.bashrc
+        echo "" >> ~/.zshrc
         echo "# Added by vscode-remote-htcondor installer on $(date)" >> ~/.zshrc
         echo "export PATH=\"\$PATH:$INSTALL_DIR\"" >> ~/.zshrc
         echo "Added $INSTALL_DIR to PATH in ~/.zshrc"

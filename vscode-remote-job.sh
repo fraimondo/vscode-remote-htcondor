@@ -2,7 +2,7 @@
 
 echo "Starting SSH server on port $1"
 
-if [ ! -d "${HOME:-~}.ssh" ]; then
+if [ ! -d "${HOME:-~}/.ssh" ]; then
     echo "Creating .ssh directory in home"
     mkdir -p ${HOME:-~}/.ssh
 fi
